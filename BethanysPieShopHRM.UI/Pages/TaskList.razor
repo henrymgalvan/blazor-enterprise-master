@@ -1,0 +1,56 @@
+﻿@page "/tasks"
+
+<div id="tasks" class="widget">
+    <h3>Tasks<button type="submit" @onclick="AddTask" class="btn btn-primary edit-btn float-right">Add Task</button></h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Description</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in Tasks)
+            {
+                <tr>
+                    <td>@task.Title</td>
+                    <td>@task.Description</td>
+                    <td>@task.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Inject] public ITaskDataService _taskService { get; set; }
+    [Inject] public NavigationManager _navManager { get; set; }
+    [Inject] public ILogger<TaskList> _logger { get; set; }
+
+    [Parameter] public int Count { get; set; }
+
+    public List<HRTask> Tasks { get; set; } = new List<HRTask>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Tasks = (await _taskService.GetAllTasks()).ToList();
+        }
+        catch (Exception e)
+        {
+            _logger.LogDebug(e, e.Message);
+        }
+
+        if (Count > 0)
+        {
+            Tasks = Tasks.Take(Count).ToList();
+        }
+    }
+
+    public void AddTask()
+    {
+        _navManager.NavigateTo("taskedit");
+    }
+}
